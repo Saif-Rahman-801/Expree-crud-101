@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -28,15 +28,34 @@ async function run() {
     const database = client.db("insertUsersDB");
     const allUsers = database.collection("allUsers");
 
+    // Read Data
     app.get("/users", async (req, res) => {
       const cursor = allUsers.find();
       const result = await cursor.toArray();
       res.send(result);
     });
 
+    // Create Data
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await allUsers.insertOne(user);
+      res.send(result);
+    });
+
+    // Get a Specific data
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const user = await allUsers.findOne(query);
+      res.send(user);
+    });
+
+    // Delete Data
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("Delete", id);
+      const query = { _id: new ObjectId(id) };
+      const result = await allUsers.deleteOne(query);
       res.send(result);
     });
 
